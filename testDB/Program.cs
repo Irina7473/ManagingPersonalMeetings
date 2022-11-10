@@ -11,10 +11,11 @@ namespace testDB
         static void Main(string[] args)
         {                        
             DBConnection.Notify += Output;
+            Meet.Notify += Output;
             var db = new DBConnection();            
             var t = DateTime.Now.ToString();
             //Console.WriteLine(t);
-            /*
+           /* 
             var meet = new Meet();
             //meet.Content = "rabota";
             meet.Start = new DateTime(2022, 11, 14, 08, 00, 00);
@@ -24,12 +25,14 @@ namespace testDB
             Console.WriteLine();
             */
 
-            var m1 = db.FindMeet(5);
-            Console.WriteLine(m1.ToString());
+            var m1 = db.FindMeet(3);
+            if (m1!=null)Console.WriteLine(m1.ToString());
+            m1.Start = new DateTime(2022, 11, 04, 16, 30, 00);
             Console.WriteLine();
 
             var meetings = db.FindMeetings();
-            foreach (var meet in meetings) Console.WriteLine(meet.ToString());
+            foreach (var m in meetings) Console.WriteLine(m.ToString());
+
 
 
         }

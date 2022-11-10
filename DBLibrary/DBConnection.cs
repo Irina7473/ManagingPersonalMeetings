@@ -135,30 +135,3 @@ namespace DBLibrary
         }
     }
 }
-
-/*      public List<DMMessage> FindMessageToChat(int idChat)
-        {
-            var messages = new List<DMMessage>();
-            Open();
-            _query.CommandText = $"SELECT * FROM table_messages WHERE chatId='{idChat}';";
-            var result = _query.ExecuteReader();
-            if (!result.HasRows)
-            {
-                Notify?.Invoke(LogType.warn, $"Нет сообщений в чате {idChat}");
-                Close();
-                return messages;
-            }
-            else
-            {
-                while (result.Read())
-                {
-                    var mes = new DMMessage();
-                    mes.Id = result.GetInt32(0);
-                    mes.MessageType = result.GetString(1);
-                    mes.DateTime = result.GetDateTime(2);                    
-                    messages.Add(mes);
-                }
-                Close();
-                return messages;
-            }
-        }    */
