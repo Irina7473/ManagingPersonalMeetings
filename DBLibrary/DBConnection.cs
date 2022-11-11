@@ -47,39 +47,113 @@ namespace DBLibrary
         {
             _connection.Close();
         }
-        
+
         // Запись в БД
-        public void RecordToMeet(Meet meet)
+        public void RecordMeet(Meet meet)
         {
-            var contentParam = new MySqlParameter("@content", "добавлю позже"); ;
-            if (meet.Content != null) contentParam = new MySqlParameter("@content", meet.Content);
+            string content = String.IsNullOrEmpty(meet.Content) ? "добавлю позже" : meet.Content;
+            var contentParam = new MySqlParameter("@content", content);
             _query.Parameters.Add(contentParam);
             var startParam = new MySqlParameter("@start", meet.Start);
             _query.Parameters.Add(startParam);
             var endingParam = new MySqlParameter("@ending", meet.Ending);
             _query.Parameters.Add(endingParam);
-            var noticeParam = new MySqlParameter("@notice", meet.Notice);
-            _query.Parameters.Add(noticeParam);
-
-            Open();
-            _query.CommandText = $"INSERT INTO meetingschedule (content, start, ending, notice)" +
+            if (meet.Notice > DateTime.MinValue)
+            {
+                var noticeParam = new MySqlParameter("@notice", meet.Notice);
+                _query.Parameters.Add(noticeParam);
+                Open();
+                _query.CommandText = $"INSERT INTO meetingschedule (content, start, ending, notice)" +
                     $"VALUES (@content, @start, @ending, @notice)";
+            }
+            else
+            {
+                Open();
+                _query.CommandText = $"INSERT INTO meetingschedule (content, start, ending)" +
+                    $"VALUES (@content, @start, @ending)";
+            }
             try { 
                 _query.ExecuteNonQuery();
-                Notify?.Invoke(LogType.info, "Запись в бд сделана");
+                Notify?.Invoke(LogType.info, $"Запись в бд сделана: {meet.ToString()}");;
             }
             catch (Exception e) { Notify?.Invoke(LogType.error, e.ToString()); }
             Close();
         }
 
-        public Meet FindMeet(int id)
+        public void UpdateMeet(Meet meet)
+        {
+            if (!ExistMeet(meet.Id)) Notify?.Invoke(LogType.warn, "Нет данных для изменения");
+            else
+            {
+                Open();
+                string content = String.IsNullOrEmpty(meet.Content) ? "добавлю позже" : meet.Content;
+                var contentParam = new MySqlParameter("@content", content);
+                _query.Parameters.Add(contentParam);
+                var startParam = new MySqlParameter("@start", meet.Start);
+                _query.Parameters.Add(startParam);
+                var endingParam = new MySqlParameter("@ending", meet.Ending);
+                _query.Parameters.Add(endingParam);
+                if (meet.Notice > DateTime.MinValue)
+                {
+                    var noticeParam = new MySqlParameter("@notice", meet.Notice);
+                    _query.Parameters.Add(noticeParam);
+                    _query.CommandText = $"UPDATE meetingschedule SET content=@content, " +
+                        $"start=@start, ending=@ending, notice=@notice  WHERE id='{meet.Id}'; ";                       
+                }
+                else
+                {
+                    _query.CommandText = $"UPDATE meetingschedule SET content=@content, " +
+                        $"start=@start, ending=@ending, notice=NULL  WHERE id='{meet.Id}';";
+                }
+                try
+                {
+                    _query.ExecuteNonQuery();
+                    Notify?.Invoke(LogType.info, $"Данные в бд изменены: {meet.ToString()}"); ;
+                }
+                catch (Exception e) { Notify?.Invoke(LogType.error, e.ToString()); }
+                Close();
+            }
+        }
+
+        public void DeletMeet(int id)
+        {
+            if (!ExistMeet(id)) Notify?.Invoke(LogType.warn, "Нет данных для удаления");
+            else
+            {
+                Open();
+                _query.CommandText = $"DELETE FROM meetingschedule where id='{id}';";
+                int rowCount = _query.ExecuteNonQuery();
+                Notify?.Invoke(LogType.info, $"Данные о встрече удалены, id={id}");
+                Close();
+            }
+        }
+
+        public bool ExistMeet(int id)
         {
             Open();
             _query.CommandText = $"SELECT *FROM meetingschedule where id='{id}';";
             var result = _query.ExecuteReader();
             if (!result.HasRows)
             {
-                Notify?.Invoke(LogType.warn, "Нет данных о встрече");
+                Notify?.Invoke(LogType.warn, $"Нет данных о встрече, id={id}");
+                Close();
+                return false;
+            }
+            else
+            {                
+                Close();
+                return true;
+            }
+        }
+
+        public Meet FindMeet(int id)
+        {            
+            Open();
+            _query.CommandText = $"SELECT *FROM meetingschedule where id='{id}';";
+            var result = _query.ExecuteReader();
+            if (!result.HasRows) 
+            { 
+                Notify?.Invoke(LogType.warn, $"Нет данных о встрече, id={id}");
                 Close();
                 return null;
             }
@@ -94,17 +168,11 @@ namespace DBLibrary
                     meet.Ending = result.GetDateTime(3);
                     if (!result.IsDBNull(4)) meet.Notice = result.GetDateTime(4);
                 }
-                //result.Read();                
-                //string content = result.GetString(1);
                 Close();
-                //if (content == string.Empty) Notify?.Invoke(LogType.warn, $"не задано");
-                //else Notify?.Invoke(LogType.info, $"найдено");
-                //return content;
                 return meet;
-            }            
+            }
         }
-
-
+        
         public List<Meet> FindMeetings()
         {
             var meetings = new List<Meet>();
@@ -115,7 +183,7 @@ namespace DBLibrary
             {
                 Notify?.Invoke(LogType.warn, $"Нет встреч в списке");
                 Close();
-                return meetings;
+                return null;
             }
             else
             {
@@ -131,7 +199,8 @@ namespace DBLibrary
                 }
                 Close();
                 return meetings;
-            }
+            }            
         }
+        
     }
 }
