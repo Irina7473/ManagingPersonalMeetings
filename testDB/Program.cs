@@ -23,7 +23,7 @@ namespace testDB
             //meet.Start = new DateTime(2022, 01, 12, 08, 00, 00);
             //meet.Ending = new DateTime(2022, 11, 13, 20, 00, 00);
             //meet.Notice = new DateTime(2022, 11, 14, 06, 00, 00);
-            //db.RecordMeet(new Meet("", new DateTime(2022, 01, 12, 08, 00, 00), new DateTime(2022, 11, 13, 20, 00, 00)));
+            //db.RecordMeet(new Meet("test3", new DateTime(2022, 12, 12, 08, 00, 00), new DateTime(2022, 12, 12, 20, 00, 00)));
             //Console.WriteLine();
 
 
@@ -35,9 +35,11 @@ namespace testDB
 
             //db.UpdateMeet(meet);
 
-            var meetings = db.FindMeetings();
-            foreach (var m in meetings) Console.WriteLine(m.ToString());
-            SaveToFile.RecordToFile(meetings);
+            var meetings = db.FindAllMeetings();
+            //var meetings = db.FindMeetings(new DateTime(2022, 11, 20, 00, 00, 00), new DateTime(2022, 11, 20, 23, 59, 59));
+            //var meetings = db.FindMeetingsByLine("1");
+            if (meetings!=null) foreach (var m in meetings) Console.WriteLine(m.ToString());
+            //SaveToFile.RecordToFile(meetings);
 
 
         }
@@ -79,8 +81,5 @@ namespace testDB
 При этом встречи не должны пересекаться.
 
 При наступлении времени напоминания приложение информирует пользователя о предстоящей встрече и времени ее начала.
-
-Пользователь может посмотреть расписание своих встреч на любой день, в том числе и прошедший.
-
 */
 
