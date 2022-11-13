@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+
+using DBLibrary;
 
 namespace MPM
 {
@@ -20,34 +23,68 @@ namespace MPM
     /// </summary>
     public partial class MainWindow : Window
     {
+        //public ObservableCollection<Meet>;
+
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Filter_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void AddMeet_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Discharge_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void SaveMeet_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ChangeMeet_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void СlearForm_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void TextBox_MeetContent_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void MenuItem_Click_Change(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void MenuItem_Click_Delete(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
 
 
 /*
- using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-using ClassLibrari;
-
+ 
 namespace TasksListWpfApp
 {
     /// <summary>
@@ -75,10 +112,6 @@ namespace TasksListWpfApp
         {
             InitializeComponent();
 
-            TableImportance1.IsEnabled = false;
-            TableImportance2.IsEnabled = false;
-            TableImportance3.IsEnabled = false;
-            SaveColor.IsEnabled = false;
             SaveTask.IsEnabled = false;
             ChangeTask.IsEnabled = false;
             СlearForm.IsEnabled = false;
@@ -137,14 +170,7 @@ namespace TasksListWpfApp
             if (exit.ShowDialog() == true) this.Close();
         } 
 
-        private void Importance_RadioButton_Checked(object sender, RoutedEventArgs e)
-        {
-            RadioButton pressed = (RadioButton)sender;
-            pressed.IsChecked = true;
-            if (pressed.Content.ToString() == "Не очень важно") importance = 1;
-            if (pressed.Content.ToString() == "Важно") importance = 2;
-            if (pressed.Content.ToString() == "Очень важно") importance = 3;
-        }
+       
         private void TaskContent_TextChanged(object sender, TextChangedEventArgs e)
         {
             taskContent = TextBox_TaskContent.Text.ToString();
@@ -184,14 +210,7 @@ namespace TasksListWpfApp
             }
         }
 
-        private void СlearForm_Click(object sender, RoutedEventArgs e)
-        {
-            TextBox_TaskContent.Text = "";
-            TextBox_Limit.Text = "";
-            RadioButton_Importance1.IsChecked = false;
-            RadioButton_Importance2.IsChecked = false;
-            RadioButton_Importance3.IsChecked = false;
-        }
+        
         
         private void MenuItem_Click_Change(object sender, RoutedEventArgs e)
         {
@@ -242,43 +261,7 @@ namespace TasksListWpfApp
             State.Text="Список обновлен";
         }
 
-        private void Create_importance_tables_Click(object sender, RoutedEventArgs e)
-        {
-            TableImportance1.IsEnabled = true;
-            TableImportance2.IsEnabled = true;
-            TableImportance3.IsEnabled = true;
-            SaveColor.IsEnabled = true;
-        }
-
-        private void SaveColor_Click(object sender, RoutedEventArgs e)
-        {
-            //Вариант с моей коллекцией типа ColorsServices
-            if (TableImportance1.IsChecked == true) color1 = (SelectColor1.SelectedItem as ColorsServices).Fond;
-            if (TableImportance2.IsChecked == true) color2 = (SelectColor2.SelectedItem as ColorsServices).Fond;
-            if (TableImportance3.IsChecked == true) color3 = (SelectColor3.SelectedItem as ColorsServices).Fond;
-            
-            RadioButton_Importance1.Background = color1;
-            RadioButton_Importance2.Background = color2;
-            RadioButton_Importance3.Background = color3;
-
-            if (level!=null) ChangeColor.IsEnabled = true;
-            SelectColor1.SelectedItem=null;
-            SelectColor2.SelectedItem = null;
-            SelectColor3.SelectedItem = null;
-            TableImportance1.IsChecked = false;
-            TableImportance2.IsChecked = false;
-            TableImportance3.IsChecked = false;
-            TableImportance1.IsEnabled = false;
-            TableImportance2.IsEnabled = false;
-            TableImportance3.IsEnabled = false;
-            
-            SaveColor.IsEnabled = false;
-        }
-        private void ChangeColor_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateObjectiveList();
-            ChangeColor.IsEnabled = false;
-        }
+      
     }
 }
  */

@@ -31,14 +31,14 @@
                     <!-- Верх -->
                     <Grid Grid.Row="0">
                         <WrapPanel Orientation="Horizontal">
-                            <Button x:Name="Creating" Click="Creating_Click"  Style="{DynamicResource style_Button_Action}" >
+                            <Button x:Name="Creating" Style="{DynamicResource style_Button_Action}" >
                                 <TextBlock Text="Создание нового списка встреч" TextWrapping="Wrap" TextAlignment="Center"/>
                             </Button>
-                            <Button x:Name="Addendum" Click="Addendum_Click"  Style="{DynamicResource style_Button_Action}">
+                            <Button x:Name="AddMeet" Click="AddMeet_Click"  Style="{DynamicResource style_Button_Action}">
                                 <TextBlock Text="Добавление новых встреч в список" TextWrapping="Wrap" TextAlignment="Center"/>
                             </Button>
-                            <Button x:Name="Uploading" Click="Uploading_Click"  Style="{DynamicResource style_Button_Action}">
-                                <TextBlock Text="Загрузка списка встреч" TextWrapping="Wrap" TextAlignment="Center"/>
+                            <Button x:Name="Filter" Click="Filter_Click"  Style="{DynamicResource style_Button_Action}">
+                                <TextBlock Text="Фильтр встреч" TextWrapping="Wrap" TextAlignment="Center"/>
                             </Button>
                             <Button x:Name="Discharge" Click="Discharge_Click"  Style="{DynamicResource style_Button_Action}">
                                 <TextBlock Text="Запись списка встреч в текстовый файл" TextWrapping="Wrap" TextAlignment="Center"/>
@@ -53,22 +53,11 @@
                                   HorizontalAlignment="Stretch" VerticalAlignment="Center" />
 
                     <!-- Низ -->
-                    <DockPanel Grid.Row="2">
-                        <!--
-                        <Label DockPanel.Dock="Top" Content="Выберите степень важности задачи" />
-                        <WrapPanel DockPanel.Dock="Top" HorizontalAlignment="Center">
-                            <RadioButton x:Name="RadioButton_Importance1" GroupName="Importance" Content="Не очень важно" 
-                                             Checked="Importance_RadioButton_Checked" FontSize="15" Margin="10" />
-                            <RadioButton x:Name="RadioButton_Importance2" GroupName="Importance" Content="Важно" 
-                                             Checked="Importance_RadioButton_Checked" FontSize="15" Margin="10"/>
-                            <RadioButton x:Name="RadioButton_Importance3" GroupName="Importance" Content="Очень важно" 
-                                             Checked="Importance_RadioButton_Checked" FontSize="15" Margin="10"/>
-                        </WrapPanel>
-                        -->
+                    <DockPanel Grid.Row="2">                        
                         <Label DockPanel.Dock="Top" Content="Заполните событие, встречу" />
                         <WrapPanel DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="0,0,0,20">
-                            <Button x:Name="SaveTask" Content="Записать встречу" Click="SaveTask_Click" Style="{DynamicResource style_Button}"/>
-                            <Button x:Name="ChangeTask" Content="Изменить встречу" Click="ChangeTask_Click"  Style="{DynamicResource style_Button}"/>
+                            <Button x:Name="SaveMeet" Content="Записать встречу" Click="SaveMeet_Click" Style="{DynamicResource style_Button}"/>
+                            <Button x:Name="ChangeMeet" Content="Изменить встречу" Click="ChangeMeet_Click"  Style="{DynamicResource style_Button}"/>
                             <Button x:Name="СlearForm" Content="Очистить форму" Click="СlearForm_Click"  Style="{DynamicResource style_Button}"/>
                         </WrapPanel>
                         <WrapPanel DockPanel.Dock="Bottom" >
@@ -81,11 +70,9 @@
                             <TextBox Name="TextBox_Start" Width="150" Height="30" FontSize="15" TextWrapping="Wrap" Margin="20,0,20,0" />
                             <Label Content="Длительность" Margin="20,0,0,0" />
                             <TextBox Name="TextBox_Limit" Width="150" Height="30" FontSize="15" TextWrapping="Wrap" Margin="20,0,20,0"/> 
-                        </WrapPanel>
-                        
-                        <!--  <TextBox DockPanel.Dock="Bottom" Name="TextBox_Limit" TextChanged="Limit_TextChanged" Height="30" FontSize="15" TextWrapping="Wrap" />   -->
+                        </WrapPanel>                                                
                         <Label DockPanel.Dock="Bottom" Content="Заполните сроки встречи" />
-                        <TextBox Name="TextBox_TaskContent" FontSize="15" TextWrapping="Wrap" TextChanged="TaskContent_TextChanged"/>
+                        <TextBox Name="TextBox_MeetContent" FontSize="15" TextWrapping="Wrap" TextChanged="TextBox_MeetContent_TextChanged"/>
                     </DockPanel>
                 </Grid>
 
@@ -99,7 +86,6 @@
                     <ListView Name="ObjectiveList">
                         <ListView.View >
                             <GridView >
-                              <!--  <GridViewColumn DisplayMemberBinding="{Binding Path=Importance}" Width="20">!</GridViewColumn>   -->
                                 <GridViewColumn DisplayMemberBinding="{Binding Path=MeetContent}" Width="290">Событие</GridViewColumn>
                                 <GridViewColumn DisplayMemberBinding="{Binding Path=Start}" Width="100">Начало</GridViewColumn>
                                 <GridViewColumn DisplayMemberBinding="{Binding Path=Limit}" Width="100">Длительность</GridViewColumn>
@@ -126,69 +112,9 @@
                 </StatusBar>
             </Grid>
         </TabItem>
-<!--
-        <TabItem Header="Таблица важности" FontSize="15" Background="LightBlue">
-            <StackPanel Margin="0,10,0,0">
-                <StackPanel Orientation="Horizontal">
-                    <Button x:Name="Create_importance_tables" Content="Создать свою таблицу важности" Click="Create_importance_tables_Click" Width="300" Style="{DynamicResource style_Button}"/>
-                    <Button x:Name="SaveColor" Content="Сохранить выбор" Click="SaveColor_Click" Style="{DynamicResource style_Button}"/>
-                    <Button x:Name="ChangeColor" Content="Обновить список" Click="ChangeColor_Click"  Style="{DynamicResource style_Button}"/>
-                </StackPanel>
-                <Label Content="Выберите цвет для каждого уровня важности"  />
-                <StackPanel Orientation="Horizontal">
-                    <CheckBox x:Name="TableImportance1" IsChecked="False" Content="Не очень важно" Style="{DynamicResource style_CheckBox}"/>
-                    <ComboBox Name="SelectColor1" Style="{DynamicResource style_ComboBox}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="ColorsServices" >
-                                <DockPanel LastChildFill="True" >
-                                    <Ellipse Height="20" Width="20" VerticalAlignment="Center" DockPanel.Dock="Left">
-                                        <Ellipse.Fill>
-                                            <SolidColorBrush Color="{Binding Name}"/>
-                                        </Ellipse.Fill>
-                                    </Ellipse>
-                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="5"/>
-                                </DockPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <CheckBox x:Name="TableImportance2" IsChecked="False" Content="Важно" Style="{DynamicResource style_CheckBox}"/>
-                    <ComboBox Name="SelectColor2" Style="{DynamicResource style_ComboBox}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="ColorsServices" >
-                                <DockPanel LastChildFill="True" >
-                                    <Ellipse Height="20" Width="20" VerticalAlignment="Center" DockPanel.Dock="Left">
-                                        <Ellipse.Fill>
-                                            <SolidColorBrush Color="{Binding Name}"/>
-                                        </Ellipse.Fill>
-                                    </Ellipse>
-                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="5"/>
-                                </DockPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <CheckBox x:Name="TableImportance3" IsChecked="False" Content="Очень важно" Style="{DynamicResource style_CheckBox}"/>
-                    <ComboBox Name="SelectColor3" Style="{DynamicResource style_ComboBox}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="ColorsServices" >
-                                <DockPanel LastChildFill="True" >
-                                    <Ellipse Height="20" Width="20" VerticalAlignment="Center" DockPanel.Dock="Left">
-                                        <Ellipse.Fill>
-                                            <SolidColorBrush Color="{Binding Name}"/>
-                                        </Ellipse.Fill>
-                                    </Ellipse>
-                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="5"/>
-                                </DockPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-            </StackPanel>
-        </TabItem>
-        -->
+
+        <TabItem Header="##" FontSize="15" Background="LightBlue">           
+        </TabItem>        
     </TabControl>
 
 </Window>

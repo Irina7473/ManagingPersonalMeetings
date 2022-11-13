@@ -13,8 +13,61 @@ namespace DBLibrary
     public class DBConnection
     {
         public static event Action<LogType, string> Notify;
+        /* Не получилось        
+        private const string jsonFile = "pathDB.json";
+        private string connectionString = ConnectStringSet();
+        private static string ConnectStringSet()
+        {
+            string text = "";
+            try
+            {
+                text = File.ReadAllText(jsonFile);
+                Notify?.Invoke(LogType.info, $"{jsonFile} прочитан.  {text}");
+            }
+            catch (FileNotFoundException)
+            {
+                Notify?.Invoke(LogType.error, $"{jsonFile} не найден.");
+                return null;
+            }
+            catch (IOException)
+            {
+                Notify?.Invoke(LogType.error, $"При открытии файла {jsonFile} произошла ошибка ввода-вывода.");
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                Notify?.Invoke(LogType.error, $"Параметр {jsonFile} задан в недопустимом формате.");
+                return null;
+            }
+            catch
+            {
+                Notify?.Invoke(LogType.error, $"Неизвестная ошибка при чтении {jsonFile}");
+                return null;
+            }
 
-        //Переделать получать из json
+            try
+            {
+                string constr = JsonSerializer.Deserialize<ConStr>(text).ToString();
+                return constr;
+            }
+
+            catch (JsonException)
+            {
+                Notify?.Invoke(LogType.error, $"Недопустимый JSON {jsonFile}");
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                Notify?.Invoke(LogType.error, "Совместимые объекты JsonConverter для TValue или его сериализуемых членов отсутствуют.");
+                return null;
+            }
+            catch
+            {
+                Notify?.Invoke(LogType.error, $"Неизвестная ошибка при сериализации {jsonFile}");
+                return null;
+            }
+        }*/
+        
         private string connectionString = "server=localhost;port=3306;username=root;password=server;database=dbeventlist";
         private MySqlConnection _connection;
         private MySqlCommand _query;
@@ -229,41 +282,27 @@ namespace DBLibrary
         }
 
     }
-}
 
-/*
- * Этот код не работает - не находит файл
- *  private const string jsonFile = "pathsDB.json";
-        private string connectionString = ConnectStringSet();
+   public  class ConStr
+    {
+        string server; 
+        int port; 
+        string username; 
+        string password;
+        string database;
 
-        public static string ConnectStringSet()
+        public ConStr(string server, int port, string username, string password,string database)
         {
-            //string text = "";
-            try
-            {
-                string text = File.ReadAllText(jsonFile);
-                Notify?.Invoke(LogType.info, $"{jsonFile} прочитан.");
-                return text;
-            }
-            catch (FileNotFoundException)
-            {
-                Notify?.Invoke(LogType.error, $"{jsonFile} не найден.");
-                return null;
-            }
-            catch (IOException)
-            {
-                Notify?.Invoke(LogType.error, $"При открытии файла {jsonFile} произошла ошибка ввода-вывода.");
-                return null;
-            }
-            catch (NotSupportedException)
-            {
-                Notify?.Invoke(LogType.error, $"Параметр {jsonFile} задан в недопустимом формате.");
-                return null;
-            }
-            catch
-            {
-                Notify?.Invoke(LogType.error, $"Неизвестная ошибка при чтении {jsonFile}");
-                return null;
-            }          
+            this.server = server;
+            this.port = port;
+            this.username = username;
+            this.password = password;
+            this.database = database;
         }
-*/
+        public string ToString()
+        {
+            return "server="+server+";port="+port+";username="+username+";password="+password+";database="+database;
+        }
+    }
+
+}
