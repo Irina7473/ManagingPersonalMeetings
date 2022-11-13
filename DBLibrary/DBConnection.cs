@@ -250,7 +250,7 @@ namespace DBLibrary
                     meet.Content = result.GetString(1);
                     meet.Start = result.GetDateTime(2);
                     meet.Ending = result.GetDateTime(3);
-                    if (!result.IsDBNull(4)) meet.Notice = result.GetDateTime(4);
+                    if (!result.IsDBNull(4)) meet.Notice = result.GetDateTime(4);                                        
                     meetings.Add(meet);
                 }
                 Close();
@@ -283,6 +283,7 @@ namespace DBLibrary
 
     }
 
+    /*
    public  class ConStr
     {
         string server; 
@@ -304,5 +305,5 @@ namespace DBLibrary
             return "server="+server+";port="+port+";username="+username+";password="+password+";database="+database;
         }
     }
-
+    */
 }

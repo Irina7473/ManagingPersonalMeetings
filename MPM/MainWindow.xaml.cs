@@ -23,11 +23,15 @@ namespace MPM
     /// </summary>
     public partial class MainWindow : Window
     {
-        //public ObservableCollection<Meet>;
+        new ObservableCollection<Meet> meetings;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            var db = new DBConnection();
+            meetings = new ObservableCollection<Meet>(db.FindAllMeetings());
+            MeetingsList.ItemsSource = meetings;
         }
 
         private void Filter_Click(object sender, RoutedEventArgs e)
@@ -52,7 +56,10 @@ namespace MPM
 
         private void SaveMeet_Click(object sender, RoutedEventArgs e)
         {
-
+            // исправить преобразование в Datatime
+            var meet = new Meet(TextBox_MeetContent.Text, DateTime.Parse(TextBox_Start.Text), DateTime.Parse(TextBox_Limit.Text));
+            if (TextBox_Notice.Text != null) meet.Notice = DateTime.Parse(TextBox_Notice.Text);
+            meetings.Add(meet);
         }
 
         private void ChangeMeet_Click(object sender, RoutedEventArgs e)
@@ -100,14 +107,9 @@ namespace TasksListWpfApp
         int importance = 0;
         string taskContent = "";
         string limit = "";
-        Objective changeTask = new Objective();
+        Objective changeTask = new Objective();        
 
-        Brush color1 = Brushes.Gray;
-        Brush color2 = Brushes.Lime;
-        Brush color3 = Brushes.Tomato;
-
-        ObservableCollection<ColorsServices> listColors = ListColors.GetColors();        
-
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -116,15 +118,8 @@ namespace TasksListWpfApp
             ChangeTask.IsEnabled = false;
             СlearForm.IsEnabled = false;
             ChangeColor.IsEnabled = false;
-            RadioButton_Importance1.Background = color1;
-            RadioButton_Importance2.Background = color2;
-            RadioButton_Importance3.Background = color3;
-                        
-            ObjectiveList.ItemsSource = ITEMS;
-            //GetColorId();
-            SelectColor1.ItemsSource = listColors;
-            SelectColor2.ItemsSource = listColors;
-            SelectColor3.ItemsSource = listColors;
+            
+            
         }
 
         private void Creating_Click(object sender, RoutedEventArgs e)
