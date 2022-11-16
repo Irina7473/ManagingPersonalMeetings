@@ -104,38 +104,48 @@ namespace DBLibrary
             _connection.Close();
         }
 
-        // Запись в БД
+        // Запись встречи в БД
         public void RecordMeet(Meet meet)
         {
+            //Open();
             string content = String.IsNullOrEmpty(meet.Content) ? "добавлю позже" : meet.Content;
             var contentParam = new MySqlParameter("@content", content);
             _query.Parameters.Add(contentParam);
             var startParam = new MySqlParameter("@start", meet.Start);
             _query.Parameters.Add(startParam);
             var endingParam = new MySqlParameter("@ending", meet.Ending);
-            _query.Parameters.Add(endingParam);
-            if (meet.Notice > DateTime.MinValue)
-            {
-                var noticeParam = new MySqlParameter("@notice", meet.Notice);
-                _query.Parameters.Add(noticeParam);
-                Open();
-                _query.CommandText = $"INSERT INTO meetingschedule (content, start, ending, notice)" +
-                    $"VALUES (@content, @start, @ending, @notice)";
-            }
-            else
+            _query.Parameters.Add(endingParam);   
+            var comText = $"SELECT *FROM meetingschedule " +
+                $"WHERE (start >= @start AND ending <= @ending) " +
+                $"OR (start >= @start AND ending >= @ending) " +
+                $"OR (start <= @start AND ending <= @ending)";
+            if (CheckPeriod(comText))
             {
                 Open();
-                _query.CommandText = $"INSERT INTO meetingschedule (content, start, ending)" +
-                    $"VALUES (@content, @start, @ending)";
+                if (meet.Notice > DateTime.MinValue)
+                {
+                    var noticeParam = new MySqlParameter("@notice", meet.Notice);
+                    _query.Parameters.Add(noticeParam);
+                    _query.CommandText = $"INSERT INTO meetingschedule (content, start, ending, notice)" +
+                        $"VALUES (@content, @start, @ending, @notice)";
+                }
+                else
+                {
+                    _query.CommandText = $"INSERT INTO meetingschedule (content, start, ending)" +
+                        $"VALUES (@content, @start, @ending)";
+                }
+                try
+                {
+                    _query.ExecuteNonQuery();
+                    Notify?.Invoke(LogType.info, $"Запись в бд сделана: {meet.ToString()}");
+                }
+                catch (Exception e) { Notify?.Invoke(LogType.error, e.ToString()); }
+                Close();
             }
-            try { 
-                _query.ExecuteNonQuery();
-                Notify?.Invoke(LogType.info, $"Запись в бд сделана: {meet.ToString()}");;
-            }
-            catch (Exception e) { Notify?.Invoke(LogType.error, e.ToString()); }
-            Close();
+            else Notify?.Invoke(LogType.warn, "На этот период уже назначены встречи");
+            //Close();
         }
-
+        // Изменение записи
         public void UpdateMeet(Meet meet)
         {
             if (!ExistMeet(meet.Id)) Notify?.Invoke(LogType.warn, "Нет данных для изменения");
@@ -154,7 +164,7 @@ namespace DBLibrary
                     var noticeParam = new MySqlParameter("@notice", meet.Notice);
                     _query.Parameters.Add(noticeParam);
                     _query.CommandText = $"UPDATE meetingschedule SET content=@content, " +
-                        $"start=@start, ending=@ending, notice=@notice  WHERE id='{meet.Id}'; ";                       
+                        $"start=@start, ending=@ending, notice=@notice  WHERE id='{meet.Id}'; ";
                 }
                 else
                 {
@@ -164,13 +174,59 @@ namespace DBLibrary
                 try
                 {
                     _query.ExecuteNonQuery();
-                    Notify?.Invoke(LogType.info, $"Данные в бд изменены: {meet.ToString()}"); ;
+                    Notify?.Invoke(LogType.info, $"Данные в бд изменены: {meet.ToString()}");
                 }
                 catch (Exception e) { Notify?.Invoke(LogType.error, e.ToString()); }
                 Close();
             }
         }
+        // Проверка возможности записи встреч в заданный период
+        public Boolean CheckPeriod(string comText)
+        {
+            Open();
+            _query.CommandText = comText;
+            var result = _query.ExecuteReader();
+            Close();
+            if (!result.HasRows)
+            {
+                Close();
+                return true;
+            }
+            else
+            {
+                Close();
+                Notify?.Invoke(LogType.warn, "На этот период уже назначены встречи");
+                return false;
+            }            
+        }
+        /*
+        public Boolean CheckPeriod(Meet meet)
+        {
+            Open();
+            var startParam = new MySqlParameter("@start", meet.Start);
+            _query.Parameters.Add(startParam);
+            var endingParam = new MySqlParameter("@ending", meet.Ending);
+            _query.Parameters.Add(endingParam);
+            _query.CommandText = $"SELECT *FROM meetingschedule " +
+                $"WHERE (start >= @start AND ending <= @ending) " +
+                $"OR (start >= @start AND ending >= @ending) " +
+                $"OR (start <= @start AND ending <= @ending)";
+            var result = _query.ExecuteReader();
+            Close();
+            if (!result.HasRows)
+            {
+                Close();
+                return true;
+            }
+            else
+            {
+                Close();
+                Notify?.Invoke(LogType.warn, "На этот период уже назначены встречи");
+                return false;
+            }
+        }*/
 
+        // Удаление записи
         public void DeletMeet(int id)
         {
             if (!ExistMeet(id)) Notify?.Invoke(LogType.warn, "Нет данных для удаления");
@@ -183,7 +239,7 @@ namespace DBLibrary
                 Close();
             }
         }
-
+        // Проверка наличия записи
         public bool ExistMeet(int id)
         {
             Open();
@@ -201,11 +257,11 @@ namespace DBLibrary
                 return true;
             }
         }
-
+        // Поиск записи по id
         public Meet FindMeet(int id)
         {            
             Open();
-            _query.CommandText = $"SELECT *FROM meetingschedule where id='{id}';";
+            _query.CommandText = $"SELECT *FROM meetingschedule WHERE id='{id}';";
             var result = _query.ExecuteReader();
             if (!result.HasRows) 
             { 
@@ -228,7 +284,7 @@ namespace DBLibrary
                 return meet;
             }
         }
-
+        // Получение списка всех записей, соответствующих запросу
         public List<Meet> FindMeetings(string comText)
         {
             var meetings = new List<Meet>();
@@ -258,13 +314,13 @@ namespace DBLibrary
                 return meetings;
             }
         }
-
+        // Получение списка всех записей
         public List<Meet> FindAllMeetings()
         {
             string comText = $"SELECT * FROM meetingschedule;";
             return FindMeetings(comText);
         }
-
+        // Получение списка записей за период
         public List<Meet> FindMeetingsByPeriod(DateTime begPer, DateTime endPer)
         {            
             var begParam = new MySqlParameter("@begPer", begPer);
@@ -274,7 +330,7 @@ namespace DBLibrary
             string comText = $"SELECT * FROM meetingschedule WHERE start>@begPer AND start<@endPer;";
             return FindMeetings(comText);            
         }
-
+        // Получение списка по части контента
         public List<Meet> FindMeetingsByLine(string line)
         {
             string comText = "SELECT * FROM meetingschedule WHERE content LIKE '%" + line + "%';";

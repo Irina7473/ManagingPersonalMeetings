@@ -35,25 +35,11 @@ namespace DBLibrary
 
         override public String ToString()
         {
-            String meetText = this.Id + ";" + this.Content + ";" + this.Start.ToString() + ";" + this.Ending.ToString() + ";";
-            if (this.Notice > DateTime.MinValue) meetText += this.Notice.ToString();
+            String meetText = this.Id + ";" + this.Content + ";" + 
+                this.Start.ToString("g") + ";" + this.Ending.ToString("g") + ";";
+            if (this.Notice > DateTime.MinValue) meetText += this.Notice.ToString("g");
             else meetText += "не задано";
             return meetText;
         }
     }
 }
-
-
-/*
- Эту проверку буду делать при валидации
-            var t = DateTime.Now;
-            if (String.IsNullOrEmpty(content)) Notify?.Invoke(LogType.warn, "Не заполнен контент");
-            else if (start < t || ending < t || notice < t) Notify?.Invoke(LogType.warn, "Планирование возможно только на будущее время");
-                else if (ending < start) Notify?.Invoke(LogType.warn, "Время окончания должно быть позднее времени начала");
-                    else if (notice > start) Notify?.Invoke(LogType.warn, "Время уведомления должна быть раньше времени начала");
-            else
-            {
-               
-            }               
-           
- */

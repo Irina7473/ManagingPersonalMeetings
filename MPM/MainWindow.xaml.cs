@@ -15,6 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 using DBLibrary;
+using Logger;
 
 namespace MPM
 {
@@ -23,53 +24,79 @@ namespace MPM
     /// </summary>
     public partial class MainWindow : Window
     {
-        new ObservableCollection<Meet> meetings;
+        ObservableCollection<Meet> meetings;
+        List<Meet> meetingsList;
+        DBConnection db;
+        int idMeet;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            var db = new DBConnection();
-            meetings = new ObservableCollection<Meet>(db.FindAllMeetings());
+            TextBox_Start.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
+            TextBox_Ending.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
+            TextBox_Notice.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
+
+            db = new DBConnection();
+            meetingsList = db.FindAllMeetings();
+            meetings = new ObservableCollection<Meet>(meetingsList);
             MeetingsList.ItemsSource = meetings;
+
+            DBConnection.Notify += ShowNotify;
         }
 
         private void Filter_Click(object sender, RoutedEventArgs e)
         {
-
+            DateTime start = ConversionToDateTime(TextBox_FStart.Text);
+            DateTime end = ConversionToDateTime(TextBox_FEnd.Text);
+            meetingsList = db.FindMeetingsByPeriod(start, end);
+            if (meetingsList != null) MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);
         }
 
-        private void AddMeet_Click(object sender, RoutedEventArgs e)
+        private void СlearFilter_Click(object sender, RoutedEventArgs e)
         {
-
+            TextBox_FStart.Text="";
+            TextBox_FEnd.Text = "";
+            meetingsList = db.FindAllMeetings();
+            MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);
+            State.Text = "Фильтр очищен";
         }
 
         private void Discharge_Click(object sender, RoutedEventArgs e)
         {
-
-        }
-
-        private void Exit_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
+            SaveToFile.RecordToFile(meetingsList);
+            State.Text = "Встречи записаны в файл";
+        }       
 
         private void SaveMeet_Click(object sender, RoutedEventArgs e)
-        {
-            // исправить преобразование в Datatime
-            var meet = new Meet(TextBox_MeetContent.Text, DateTime.Parse(TextBox_Start.Text), DateTime.Parse(TextBox_Limit.Text));
-            if (TextBox_Notice.Text != null) meet.Notice = DateTime.Parse(TextBox_Notice.Text);
-            meetings.Add(meet);
+        {            
+            var meet = CheсkMeet();
+            if (meet !=null)
+            {
+                db.RecordMeet(meet);
+                meetings.Add(meet);
+                State.Text = "Встреча записана";
+            }
         }
 
         private void ChangeMeet_Click(object sender, RoutedEventArgs e)
         {
-
+            var meet = CheсkMeet();
+            if (meet != null)
+            {                
+                db.UpdateMeet(meet);
+                meetingsList = db.FindAllMeetings();
+                MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);                
+                State.Text = "Встреча изменена";
+            }
         }
 
         private void СlearForm_Click(object sender, RoutedEventArgs e)
         {
-
+            TextBox_MeetContent.Text = "";
+            TextBox_Start.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
+            TextBox_Ending.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
+            TextBox_Notice.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";            
         }
 
         private void TextBox_MeetContent_TextChanged(object sender, TextChangedEventArgs e)
@@ -79,184 +106,96 @@ namespace MPM
 
         private void MenuItem_Click_Change(object sender, RoutedEventArgs e)
         {
-
+            var meet = MeetingsList.SelectedItem as Meet;
+            TextBox_MeetContent.Text = meet.Content;
+            TextBox_Start.Text = meet.Start.ToString();
+            TextBox_Ending.Text = meet.Ending.ToString();
+            TextBox_Notice.Text = meet.Notice.ToString();
+            idMeet = meet.Id;
         }
 
         private void MenuItem_Click_Delete(object sender, RoutedEventArgs e)
         {
-
+            var meet = MeetingsList.SelectedItem as Meet;
+            MessageBox.Show(meet.Id.ToString());
+            db.DeletMeet(meet.Id);
+            meetings = new ObservableCollection<Meet>(db.FindAllMeetings());
+            MeetingsList.ItemsSource = meetings;
+            State.Text = "Встреча удалена";
         }
-    }
-}
 
-
-/*
- 
-namespace TasksListWpfApp
-{
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>    
-
-    public partial class MainWindow : Window
-    {
-        //Не годится public ObservableCollection<Objective>, т.к. не дает возможность раскрасить строки каждую в свой цвет
-        List<ListViewItem> ITEMS = new List<ListViewItem>();
-        Dictionary<int, ImportanceTable> level;
-
-        int importance = 0;
-        string taskContent = "";
-        string limit = "";
-        Objective changeTask = new Objective();        
-
-        
-        public MainWindow()
+        private static DateTime ConversionToDateTime(string time)
         {
-            InitializeComponent();
-
-            SaveTask.IsEnabled = false;
-            ChangeTask.IsEnabled = false;
-            СlearForm.IsEnabled = false;
-            ChangeColor.IsEnabled = false;
-            
-            
-        }
-
-        private void Creating_Click(object sender, RoutedEventArgs e)
-        {            
-            ITEMS.Clear();
-            ObjectiveList.Items.Refresh();
-            level = ImportanceTable.CreatTaskList();
-            State.Text = "Новый список задач создан";
-        }
-
-        private void Addendum_Click(object sender, RoutedEventArgs e)
-        {
-            if (level == null)
-            {
-                ImportanceTable.Info = msg => MessageBox.Show(msg);
-                level = ImportanceTable.CreatTaskList();
+            DateTime dateTime = DateTime.MinValue;
+            string[] timeArr = time.Split(':');
+            if (timeArr.Length != 5) { MessageBox.Show($"Неправильно введена дата: {time}"); }
+            else
+            {                
+                try
+                {
+                    int ye = Convert.ToInt32(timeArr[0]);
+                    int mo = Convert.ToInt32(timeArr[1]);
+                    int da = Convert.ToInt32(timeArr[2]);
+                    int ho = Convert.ToInt32(timeArr[3]);
+                    int mi = Convert.ToInt32(timeArr[4]);
+                    dateTime = new DateTime(ye, mo, da, ho, mi, 00);
+                }
+                catch { MessageBox.Show($"Неправильно введена дата: {time}"); }
             }
-            SaveTask.IsEnabled = true;
-            СlearForm.IsEnabled = true;
-            State.Text = "Добавление задач активизировано";
+            return dateTime;            
         }
 
-        private void Uploading_Click(object sender, RoutedEventArgs e)
-        {                       
-            ITEMS.Clear();
-            ObjectiveList.Items.Refresh();
-            level = SaveToFile.ReaderFromFail();
-            UpdateObjectiveList();
-            State.Text = "Список задач загружен из файла";            
-        }
-
-        private void Discharge_Click(object sender, RoutedEventArgs e)
+        private Meet CheсkMeet()
         {
-            SaveToFile.Info = msg => MessageBox.Show(msg);
-            SaveToFile.RecordToFile(level);    
-            if(level==null) State.Text = "Список не существует";
-            else State.Text = "Список задач записан в файл";
-        }
-
-        private void Exit_Click(object sender, RoutedEventArgs e)
-        {
-            ExitWindow exit = new ExitWindow();
-            if (exit.ShowDialog() == true) this.Close();
-        } 
-
-       
-        private void TaskContent_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            taskContent = TextBox_TaskContent.Text.ToString();
-        }
-
-        private void Limit_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            limit = TextBox_Limit.Text.ToString();
-        }
-
-        private void SaveTask_Click(object sender, RoutedEventArgs e)
-        {
-            if (importance == 0) MessageBox.Show("Выберите уровень важности задачи");
+            // довести до ума
+            // 2022:12:20:08:00
+            var meet = new Meet();
+            if (TextBox_MeetContent.Text != string.Empty)
+                meet.Content = TextBox_MeetContent.Text;
             else
             {
-                var task = new Objective(importance, taskContent, limit);
-                level[task.Importance].AddTask(task);
-                UpdateObjectiveList();                
+                MessageBox.Show("Контент нужно заполнить");
+                return null;
             }
-        }
-
-        private void ChangeTask_Click(object sender, RoutedEventArgs e)
-        {
-            foreach(var uptask in level[changeTask.Importance].AnyLevel)
+            meet.Start = ConversionToDateTime(TextBox_Start.Text);
+            meet.Ending = ConversionToDateTime(TextBox_Ending.Text);
+            if (meet.Start <= DateTime.Now || meet.Start == DateTime.MinValue)
             {
-                if (uptask==changeTask)
-                {
-                    uptask.Importance = importance;
-                    uptask.TaskContent = taskContent;
-                    uptask.Limit = limit;
-                    level[uptask.Importance].AddTask(uptask);
-                    level[changeTask.Importance].RemoveTask(uptask);
-                    UpdateObjectiveList();
-                    State.Text = "Задача изменена";
-                    return;
-                }
+                MessageBox.Show("Планирование начала встречи возможно только на будущее время");
+                return null;
             }
-        }
-
-        
-        
-        private void MenuItem_Click_Change(object sender, RoutedEventArgs e)
-        {
-            changeTask = (ObjectiveList.SelectedItem as ListViewItem).Content as Objective;
-
-            importance = changeTask.Importance;
-            if (importance == 1) RadioButton_Importance1.IsChecked = true;
-            if (importance == 2) RadioButton_Importance2.IsChecked = true;
-            if (importance == 3) RadioButton_Importance3.IsChecked = true;
-            TextBox_TaskContent.Text = changeTask.TaskContent;
-            TextBox_Limit.Text = changeTask.Limit;
-
-            ChangeTask.IsEnabled = true;
-            СlearForm.IsEnabled = true;            
-        }
-
-        private void MenuItem_Click_Delete(object sender, RoutedEventArgs e)
-        {
-            var task = (ObjectiveList.SelectedItem as ListViewItem).Content as Objective;
-            level[task.Importance].RemoveTask(task);
-            UpdateObjectiveList();
-            State.Text = "Задача удалена";
-        }
-
-        private void UpdateObjectiveList()
-        {
-            ITEMS = new List<ListViewItem>();
-
-            foreach (var k in level.Keys)
+            if (meet.Ending <= meet.Start)
             {
-                if (level[k].AnyLevel.Count != 0)
-                {
-                    var taskArr = level[k].AnyLevel.ToArray();
-                    foreach (var t in taskArr)
-                    {
-                        ListViewItem OneItem = new ListViewItem();
-                        if (k == 1) OneItem.Background = color1;
-                        if (k == 2) OneItem.Background = color2;
-                        if (k == 3) OneItem.Background = color3;
-
-                        OneItem.Content = new Objective(k, t.TaskContent, t.Limit);
-                        ITEMS.Add(OneItem);
-                        ObjectiveList.ItemsSource = ITEMS;
-                    }
-                }
-                ObjectiveList.Items.Refresh();
+                MessageBox.Show("Окончание встречи возможно только после ее начала");
+                return null;
             }
-            State.Text="Список обновлен";
+            if (TextBox_Notice.Text != string.Empty)
+                meet.Notice = ConversionToDateTime(TextBox_Notice.Text);
+            if (meet.Notice <= DateTime.Now || meet.Notice >= meet.Start)
+            {
+                MessageBox.Show("Планирование уведомления возможно только на будущее время и до начала встречи");
+                return null;
+            }
+            return meet;
         }
 
-      
+        private void ShowNotify(LogType type, string message)
+        {
+            State.Text = message;
+        }
+
     }
 }
- */
+
+
+/*  TO DO
+ 
+ connectionString  получать из файла json
+
+Сделать валидацию для дат
+При этом встречи не должны пересекаться.
+Сделать так, чтобы время минимальное не записывалось-не отображалось
+
+При наступлении времени напоминания приложение информирует пользователя о предстоящей встрече и времени ее начала.
+
+*/
