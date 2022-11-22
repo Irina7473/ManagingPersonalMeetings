@@ -86,7 +86,7 @@ namespace MPM
         private void SortStartDate_Click(object sender, RoutedEventArgs e)
         {
             
-            State.Text = "Сортировка выполнена";
+            State.Text = "Сортировка не реализована";
         }
 
         private void SaveMeet_Click(object sender, RoutedEventArgs e)
