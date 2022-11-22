@@ -311,7 +311,7 @@ namespace DBLibrary
             var result = _query.ExecuteReader();
             if (!result.HasRows)
             {
-                Notify?.Invoke(LogType.warn, $"Нет встреч в списке");
+                //Notify?.Invoke(LogType.warn, $"Нет встреч в списке");
                 Close();
                 return null;
             }
