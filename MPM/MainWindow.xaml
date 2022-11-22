@@ -50,8 +50,8 @@
                                 <Button x:Name="Discharge" Click="Discharge_Click" Style="{DynamicResource style_Button_Action}">
                                     <TextBlock Text="Запись списка встреч в текстовый файл" TextWrapping="Wrap" TextAlignment="Center"/>
                                 </Button>
-                                <Button x:Name="StartNotice" Click="StartNotice_Click" Style="{DynamicResource style_Button_Action}">
-                                    <TextBlock Text="Старт проверки уведомлений" TextWrapping="Wrap" TextAlignment="Center"/>
+                                <Button x:Name="SortStartDate" Click="SortStartDate_Click" Style="{DynamicResource style_Button_Action}">
+                                    <TextBlock Text="Сортировка по дате" TextWrapping="Wrap" TextAlignment="Center"/>
                                 </Button>
                             </WrapPanel>
                         </WrapPanel>                        

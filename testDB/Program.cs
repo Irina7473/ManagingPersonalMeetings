@@ -11,7 +11,6 @@ namespace testDB
         static void Main()
         {                        
             DBConnection.Notify += Output;
-            Meet.Notify += Output;
             SaveToFile.Notify += Output;
             var db = new DBConnection();            
             var t = DateTime.Now.ToString();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -24,6 +25,10 @@ namespace MPM
         string changeContent;
         string changeNotice;
         DispatcherTimer timer;
+        public Task taskNotice;
+        private CancellationTokenSource cancelToken;
+        public static event Action<LogType, string> Notify;
+        LogToFile log;
 
         public MainWindow()
         {
@@ -45,12 +50,15 @@ namespace MPM
 
             DBConnection.Notify += ShowNotify;            
             SaveToFile.Notify += ShowNotify;
+            log = new();
+            Notify += log.RecordToLog;
 
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMinutes(1);
-            timer.Tick += timer_Tick;
-            //timer.Start();     //программа зависает после нахождения уведомления.
-        }
+            timer.Tick += timerTick;
+            timer.Start();     //программа зависает после нахождения уведомления.            
+
+    }
 
         private void Filter_Click(object sender, RoutedEventArgs e)
         {
@@ -75,10 +83,10 @@ namespace MPM
             State.Text = "Встречи записаны в файл";
         }
 
-        private void StartNotice_Click(object sender, RoutedEventArgs e)
+        private void SortStartDate_Click(object sender, RoutedEventArgs e)
         {
-            timer.Start();
-            State.Text = "Старт2 проверки уведомлений";
+            
+            State.Text = "Сортировка не реализована";
         }
 
         private void SaveMeet_Click(object sender, RoutedEventArgs e)
@@ -218,25 +226,43 @@ namespace MPM
             return dateTime;
         }
                
-        private void timer_Tick(object sender, EventArgs e)
+        private void timerTick(object sender, EventArgs e)
         {
             timer.IsEnabled = true;
             if (timer.IsEnabled)
             {
-                State.Text = "Старт1 проверки уведомлений";
-                while (true)
-                {
-                    var deadlineList = db.CheckDeadlineNotice();
-                    if (deadlineList != null)
-                    {
-                        NoticeMeetings.Background = Brushes.DarkViolet;
-                        NoticeMeetings.Text = Meet.NoticeToString(deadlineList);
-                        State.Text = "Есть уведомления о начале встреч";
-                    }
-                    else State.Text = "Нет уведомлений о начале встреч";
-                }
+                taskNotice = new(() => { FindNotice(); });
+                taskNotice.Start();
+                State.Text = "Старт1 проверки уведомлений";                
             }
             else State.Text = "Не запущена проверка уведомлений";
+        }
+        private void FindNotice()
+        {
+            string type = "no";
+            var deadlineList = db.CheckDeadlineNotice();
+            if (deadlineList != null && deadlineList.Count > 0) type = "yes";
+
+            if (cancelToken != null) return;
+            try
+            {
+                using (cancelToken = new CancellationTokenSource())
+                {
+                    AlertNotice(type, Meet.NoticeToString(deadlineList), cancelToken.Token);
+                }
+            }
+            catch (Exception exc) { Notify?.Invoke(LogType.error, $"{DateTime.Now} {exc.ToString()}"); }
+            finally { cancelToken = null; } 
+        }
+        private void AlertNotice(string type, string deadline, CancellationToken token)
+        {
+            if (type == "no") State.Text = "Нет уведомлений о начале встреч";
+            if (type == "yes") 
+            { 
+                NoticeMeetings.Background = Brushes.DarkViolet;
+                NoticeMeetings.Text = deadline;
+                State.Text = "Есть уведомления о начале встреч";
+            }
         }
 
         private void ShowNotify(LogType type, string message)

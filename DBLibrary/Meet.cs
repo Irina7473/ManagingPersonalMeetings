@@ -9,7 +9,7 @@ namespace DBLibrary
 {
     public class Meet
     {
-        public static event Action<LogType, string> Notify;
+        //public static event Action<LogType, string> Notify;
         public int Id { get; set; }
         public string Content { get; set; }
         public DateTime Start { get; set; }        
