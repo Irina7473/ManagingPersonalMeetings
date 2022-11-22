@@ -83,10 +83,10 @@ namespace MPM
             State.Text = "Встречи записаны в файл";
         }
 
-        private void StartNotice_Click(object sender, RoutedEventArgs e)
+        private void SortStartDate_Click(object sender, RoutedEventArgs e)
         {
-            timer.Start();
-            State.Text = "Старт2 проверки уведомлений";
+            
+            State.Text = "Сортировка выполнена";
         }
 
         private void SaveMeet_Click(object sender, RoutedEventArgs e)
