@@ -33,12 +33,21 @@ namespace DBLibrary
             this.Notice = notice;
         }
 
-        override public String ToString()
+        public String MeetToString()
         {
             String meetText = this.Id + ";" + this.Content + ";" + 
                 this.Start.ToString("g") + ";" + this.Ending.ToString("g") + ";";
             if (this.Notice > DateTime.MinValue) meetText += this.Notice.ToString("g");
             else meetText += "не задано";
+            return meetText;
+        }
+
+        public static String NoticeToString(List<Meet> meetings)
+        {
+            String meetText = "Уведомление о начале встреч:\n";
+            if (meetings != null) foreach (var meet in meetings)
+                    meetText += "\n" + meet.Content + " - " + meet.Start.ToString("g");            
+            else return null;
             return meetText;
         }
     }

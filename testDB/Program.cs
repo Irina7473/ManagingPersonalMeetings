@@ -16,9 +16,9 @@ namespace testDB
             var db = new DBConnection();            
             var t = DateTime.Now.ToString();
             //Console.WriteLine(t);
-           
+
             //var meet = new Meet(3,"test1", new DateTime(2022, 01, 12, 08, 00, 00), new DateTime(2022, 11, 13, 20, 00, 00));
-            //Console.WriteLine(meet.ToString());
+            //Console.WriteLine(meet.MeetToString());
             //meet.Content = "relaxation";
             //meet.Start = new DateTime(2022, 01, 12, 08, 00, 00);
             //meet.Ending = new DateTime(2022, 11, 13, 20, 00, 00);
@@ -38,7 +38,7 @@ namespace testDB
             var meetings = db.FindAllMeetings();
             //var meetings = db.FindMeetings(new DateTime(2022, 11, 20, 00, 00, 00), new DateTime(2022, 11, 20, 23, 59, 59));
             //var meetings = db.FindMeetingsByLine("1");
-            if (meetings!=null) foreach (var m in meetings) Console.WriteLine(m.ToString());
+            if (meetings!=null) foreach (var m in meetings) Console.WriteLine(m.MeetToString());
             //SaveToFile.RecordToFile(meetings);
 
 
@@ -70,16 +70,3 @@ namespace testDB
     }
     
 }
-
-/*  TO DO
- 
- connectionString  получать из файла json
-
-Сделать валидацию для дат
-При этом встречи не должны пересекаться.
-Сделать так, чтобы время минимальное не записывалось-не отображалось
-
-При наступлении времени напоминания приложение информирует пользователя о предстоящей встрече и времени ее начала.
-
-*/
-

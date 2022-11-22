@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MPM"
         mc:Ignorable="d"        
-        Title="******** Список личных встреч! ********" Height="600" Width="1300" Background="CornflowerBlue">
+        Title="******** Список личных встреч! ********" Height="650" Width="1300" Background="CornflowerBlue">
     
     <Window.Resources>
         <ResourceDictionary Source="Style.xaml"/>
@@ -31,25 +31,29 @@
                     <!-- Верх -->
                     <Grid Grid.Row="0">
                         <WrapPanel Orientation="Vertical">
-                            <WrapPanel Orientation="Horizontal" >
-                            <Button x:Name="Filter" Click="Filter_Click" Style="{DynamicResource style_Button_Action}">
-                                <TextBlock Text="Фильтр встреч" TextWrapping="Wrap" TextAlignment="Center"/>
-                            </Button>
-                            <Button x:Name="СlearFilter" Click="СlearFilter_Click" Style="{DynamicResource style_Button_Action}">
-                                <TextBlock Text="Сброс фильтра" TextWrapping="Wrap" TextAlignment="Center"/>
-                            </Button>
+                            <WrapPanel Orientation="Horizontal" Margin="20,10,0,0" >
+                                <Button x:Name="Filter" Click="Filter_Click" Style="{DynamicResource style_Button_Action}">
+                                    <TextBlock Text="Фильтр встреч" TextWrapping="Wrap" TextAlignment="Center"/>
+                                </Button>
+                                <Button x:Name="СlearFilter" Click="СlearFilter_Click" Style="{DynamicResource style_Button_Action}">
+                                    <TextBlock Text="Сброс фильтра" TextWrapping="Wrap" TextAlignment="Center"/>
+                                </Button>
                             </WrapPanel>
-                            
-                            <WrapPanel Orientation="Horizontal">
+
+                            <WrapPanel Orientation="Horizontal" Margin="20,0,0,0">
                                 <Label Content="Начало"  />
                                 <TextBox Name="TextBox_FStart" Width="150" Height="30" FontSize="15" TextWrapping="Wrap" />
                                 <Label Content="Окончание"  />
                                 <TextBox Name="TextBox_FEnd" Width="150" Height="30" FontSize="15" TextWrapping="Wrap" />
                             </WrapPanel>
-                            
-                            <Button x:Name="Discharge" Click="Discharge_Click" Margin="0,20,0,0" Style="{DynamicResource style_Button_Action}">
-                                <TextBlock Text="Запись списка встреч в текстовый файл" TextWrapping="Wrap" TextAlignment="Center"/>
-                            </Button>
+                            <WrapPanel Orientation="Horizontal" Margin="20,10,0,0">
+                                <Button x:Name="Discharge" Click="Discharge_Click" Style="{DynamicResource style_Button_Action}">
+                                    <TextBlock Text="Запись списка встреч в текстовый файл" TextWrapping="Wrap" TextAlignment="Center"/>
+                                </Button>
+                                <Button x:Name="StartNotice" Click="StartNotice_Click" Style="{DynamicResource style_Button_Action}">
+                                    <TextBlock Text="Старт проверки уведомлений" TextWrapping="Wrap" TextAlignment="Center"/>
+                                </Button>
+                            </WrapPanel>
                         </WrapPanel>                        
                     </Grid>
 
@@ -67,11 +71,13 @@
                         </WrapPanel>
                         <WrapPanel DockPanel.Dock="Bottom" >
                             <Label Content="Уведомить о встрече " Margin="0,10,0,0" />
-                            <TextBox Name="TextBox_Notice" Width="150" Height="30" FontSize="15" TextWrapping="Wrap" Margin="0, 10,0,0" />                           
+                            <TextBox Name="TextBox_Notice" Width="150" Height="30" FontSize="15" 
+                                     TextWrapping="Wrap" Margin="0, 10,0,0" TextChanged="TextBox_Notice_TextChanged"/>                           
                         </WrapPanel>                        
                         <WrapPanel DockPanel.Dock="Bottom" >
                             <Label Content="Окончание" Margin="0,10,0,0" />
-                            <TextBox Name="TextBox_Ending" Width="150" Height="30" FontSize="15" TextWrapping="Wrap" Margin="0,10,0,0"/> 
+                            <TextBox Name="TextBox_Ending" Width="150" Height="30" FontSize="15" 
+                                     TextWrapping="Wrap" Margin="0,10,0,0" /> 
                         </WrapPanel>
                         <WrapPanel DockPanel.Dock="Bottom" >
                             <Label Content="Начало" Margin="0,10,0,0" />
@@ -119,7 +125,10 @@
             </Grid>
         </TabItem>
 
-        <TabItem Header="##" FontSize="15" Background="LightBlue">           
+        <TabItem Header="Уведомления о начале встреч" FontSize="15" Background="LightBlue">
+            <WrapPanel Orientation="Vertical">
+                <TextBlock Name="NoticeMeetings" Text="Уведомлений о начале встреч не найдено." TextWrapping="Wrap" Margin="20" />
+            </WrapPanel>
         </TabItem>        
     </TabControl>
 

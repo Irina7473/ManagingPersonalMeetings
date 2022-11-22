@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
+using System.Windows.Threading;
 using DBLibrary;
 using Logger;
 
@@ -28,21 +21,35 @@ namespace MPM
         List<Meet> meetingsList;
         DBConnection db;
         int idMeet;
+        string changeContent;
+        string changeNotice;
+        DispatcherTimer timer;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            TextBox_Start.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
-            TextBox_Ending.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
-            TextBox_Notice.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
+            TextBox_Start.Text = "ГГГГ:М:Д:Ч:М";
+            TextBox_Ending.Text = "ГГГГ:М:Д:Ч:М";
+            TextBox_Notice.Text = "ГГГГ:М:Д:Ч:М";
+            TextBox_FStart.Text = "ГГГГ:М:Д:Ч:М";
+            TextBox_FEnd.Text = "ГГГГ:М:Д:Ч:М";
 
             db = new DBConnection();
             meetingsList = db.FindAllMeetings();
             meetings = new ObservableCollection<Meet>(meetingsList);
             MeetingsList.ItemsSource = meetings;
 
-            DBConnection.Notify += ShowNotify;
+            changeContent = string.Empty;
+            changeNotice = string.Empty;
+
+            DBConnection.Notify += ShowNotify;            
+            SaveToFile.Notify += ShowNotify;
+
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMinutes(1);
+            timer.Tick += timer_Tick;
+            //timer.Start();     //программа зависает после нахождения уведомления.
         }
 
         private void Filter_Click(object sender, RoutedEventArgs e)
@@ -55,8 +62,8 @@ namespace MPM
 
         private void СlearFilter_Click(object sender, RoutedEventArgs e)
         {
-            TextBox_FStart.Text="";
-            TextBox_FEnd.Text = "";
+            TextBox_FStart.Text= "ГГГГ:М:Д:Ч:М";
+            TextBox_FEnd.Text = "ГГГГ:М:Д:Ч:М";
             meetingsList = db.FindAllMeetings();
             MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);
             State.Text = "Фильтр очищен";
@@ -66,7 +73,13 @@ namespace MPM
         {
             SaveToFile.RecordToFile(meetingsList);
             State.Text = "Встречи записаны в файл";
-        }       
+        }
+
+        private void StartNotice_Click(object sender, RoutedEventArgs e)
+        {
+            timer.Start();
+            State.Text = "Старт2 проверки уведомлений";
+        }
 
         private void SaveMeet_Click(object sender, RoutedEventArgs e)
         {            
@@ -74,8 +87,9 @@ namespace MPM
             if (meet !=null)
             {
                 db.RecordMeet(meet);
-                meetings.Add(meet);
-                State.Text = "Встреча записана";
+                //meetings.Add(meet);
+                meetingsList = db.FindAllMeetings();
+                MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);
             }
         }
 
@@ -83,35 +97,56 @@ namespace MPM
         {
             var meet = CheсkMeet();
             if (meet != null)
-            {                
+            {
+                meet.Id = idMeet;
                 db.UpdateMeet(meet);
-                meetingsList = db.FindAllMeetings();
-                MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);                
-                State.Text = "Встреча изменена";
             }
+            else
+            {
+                if (changeContent != string.Empty)
+                {
+                    db.UpdateMeet(idMeet, changeContent);
+                    changeContent = string.Empty;
+                }
+                if (changeNotice != string.Empty)
+                {
+                    db.UpdateMeet(idMeet, ConversionToDateTime(changeNotice));
+                    changeNotice = string.Empty;
+                }
+            }
+            meetingsList = db.FindAllMeetings();
+            MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);
         }
 
         private void СlearForm_Click(object sender, RoutedEventArgs e)
         {
             TextBox_MeetContent.Text = "";
-            TextBox_Start.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
-            TextBox_Ending.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";
-            TextBox_Notice.Text = "ГГГГ:ММ:ДД:ЧЧ:ММ";            
+            TextBox_Start.Text = "ГГГГ:М:Д:Ч:М";
+            TextBox_Ending.Text = "ГГГГ:М:Д:Ч:М";
+            TextBox_Notice.Text = "ГГГГ:М:Д:Ч:М";
+            changeContent = string.Empty;
+            State.Text = "Форма очищена";
         }
 
         private void TextBox_MeetContent_TextChanged(object sender, TextChangedEventArgs e)
         {
+            changeContent = TextBox_MeetContent.Text.ToString();
+        }
 
+        private void TextBox_Notice_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            changeNotice = TextBox_Notice.Text.ToString();
         }
 
         private void MenuItem_Click_Change(object sender, RoutedEventArgs e)
         {
             var meet = MeetingsList.SelectedItem as Meet;
             TextBox_MeetContent.Text = meet.Content;
-            TextBox_Start.Text = meet.Start.ToString();
-            TextBox_Ending.Text = meet.Ending.ToString();
-            TextBox_Notice.Text = meet.Notice.ToString();
+            TextBox_Start.Text = meet.Start.ToString("yyyy:MM:dd:hh:mm"); 
+            TextBox_Ending.Text = meet.Ending.ToString("yyyy:MM:dd:hh:mm");
+            TextBox_Notice.Text = meet.Notice.ToString("yyyy:MM:dd:hh:mm");
             idMeet = meet.Id;
+            State.Text = idMeet.ToString();
         }
 
         private void MenuItem_Click_Delete(object sender, RoutedEventArgs e)
@@ -123,32 +158,10 @@ namespace MPM
             MeetingsList.ItemsSource = meetings;
             State.Text = "Встреча удалена";
         }
-
-        private static DateTime ConversionToDateTime(string time)
-        {
-            DateTime dateTime = DateTime.MinValue;
-            string[] timeArr = time.Split(':');
-            if (timeArr.Length != 5) { MessageBox.Show($"Неправильно введена дата: {time}"); }
-            else
-            {                
-                try
-                {
-                    int ye = Convert.ToInt32(timeArr[0]);
-                    int mo = Convert.ToInt32(timeArr[1]);
-                    int da = Convert.ToInt32(timeArr[2]);
-                    int ho = Convert.ToInt32(timeArr[3]);
-                    int mi = Convert.ToInt32(timeArr[4]);
-                    dateTime = new DateTime(ye, mo, da, ho, mi, 00);
-                }
-                catch { MessageBox.Show($"Неправильно введена дата: {time}"); }
-            }
-            return dateTime;            
-        }
-
+               
         private Meet CheсkMeet()
         {
             // довести до ума
-            // 2022:12:20:08:00
             var meet = new Meet();
             if (TextBox_MeetContent.Text != string.Empty)
                 meet.Content = TextBox_MeetContent.Text;
@@ -170,13 +183,60 @@ namespace MPM
                 return null;
             }
             if (TextBox_Notice.Text != string.Empty)
-                meet.Notice = ConversionToDateTime(TextBox_Notice.Text);
-            if (meet.Notice <= DateTime.Now || meet.Notice >= meet.Start)
             {
-                MessageBox.Show("Планирование уведомления возможно только на будущее время и до начала встречи");
-                return null;
+                meet.Notice = ConversionToDateTime(TextBox_Notice.Text);
+                if (meet.Notice <= DateTime.Now || meet.Notice >= meet.Start)
+                {
+                    MessageBox.Show("Планирование уведомления возможно только на будущее время и до начала встречи");
+                    return null;
+                }
             }
-            return meet;
+            
+            if (db.CheckPeriod(meet.Start, meet.Ending)) return meet;
+            else return null;
+           
+        }
+
+        private static DateTime ConversionToDateTime(string time)
+        {
+            DateTime dateTime = DateTime.MinValue;
+            string[] timeArr = time.Split(':');
+            if (timeArr.Length != 5) { MessageBox.Show($"Неправильно введена дата: {time}"); }
+            else
+            {
+                try
+                {
+                    int ye = Convert.ToInt32(timeArr[0]);
+                    int mo = Convert.ToInt32(timeArr[1]);
+                    int da = Convert.ToInt32(timeArr[2]);
+                    int ho = Convert.ToInt32(timeArr[3]);
+                    int mi = Convert.ToInt32(timeArr[4]);
+                    dateTime = new DateTime(ye, mo, da, ho, mi, 00);
+                }
+                catch { MessageBox.Show($"Неправильно введена дата: {time}"); }
+            }
+            return dateTime;
+        }
+               
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            timer.IsEnabled = true;
+            if (timer.IsEnabled)
+            {
+                State.Text = "Старт1 проверки уведомлений";
+                while (true)
+                {
+                    var deadlineList = db.CheckDeadlineNotice();
+                    if (deadlineList != null)
+                    {
+                        NoticeMeetings.Background = Brushes.DarkViolet;
+                        NoticeMeetings.Text = Meet.NoticeToString(deadlineList);
+                        State.Text = "Есть уведомления о начале встреч";
+                    }
+                    else State.Text = "Нет уведомлений о начале встреч";
+                }
+            }
+            else State.Text = "Не запущена проверка уведомлений";
         }
 
         private void ShowNotify(LogType type, string message)
@@ -187,15 +247,14 @@ namespace MPM
     }
 }
 
-
 /*  TO DO
- 
- connectionString  получать из файла json
+connectionString  получать из файла json
 
 Сделать валидацию для дат
-При этом встречи не должны пересекаться.
 Сделать так, чтобы время минимальное не записывалось-не отображалось
 
-При наступлении времени напоминания приложение информирует пользователя о предстоящей встрече и времени ее начала.
+Доработать изменение уведомления
+
+Уведомление пользователя программу вводит в ступор после нахождения уведомления.
 
 */

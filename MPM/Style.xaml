@@ -122,7 +122,7 @@
                 </MultiDataTrigger.Setters>
             </MultiDataTrigger>
         </Style.Triggers>
-        <Setter Property="Width" Value="200" />
+        <Setter Property="Width" Value="500" />
         <Setter Property="Height" Value="30" />
 
 
