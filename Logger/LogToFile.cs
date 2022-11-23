@@ -18,7 +18,7 @@ namespace Logger
             catch
             { Notify?.Invoke(LogType.error, "Путь к TotalLog.log не найден."); }            
         }
-
+        // запись логов в файл
         public async void RecordToLog(LogType type, string message)
         {            
             var text = type + " " + message;
@@ -29,7 +29,7 @@ namespace Logger
             }
             catch (Exception e) { Notify?.Invoke(LogType.error, e.ToString());}
         }
-
+        //чтение логов из файла
         public string ReadTheLog()
         {
             string log = "";

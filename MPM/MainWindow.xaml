@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MPM"
         mc:Ignorable="d"        
-        Title="******** Список личных встреч! ********" Height="650" Width="1300" Background="CornflowerBlue">
+        Title="******** Список личных встреч! ********" 
+        Height="650" Width="1300" Background="CornflowerBlue">
     
     <Window.Resources>
         <ResourceDictionary Source="Style.xaml"/>
@@ -32,26 +33,34 @@
                     <Grid Grid.Row="0">
                         <WrapPanel Orientation="Vertical">
                             <WrapPanel Orientation="Horizontal" Margin="20,10,0,0" >
-                                <Button x:Name="Filter" Click="Filter_Click" Style="{DynamicResource style_Button_Action}">
+                                <Button x:Name="Filter" Click="Filter_Click" 
+                                        Style="{DynamicResource style_Button_Action}">
                                     <TextBlock Text="Фильтр встреч" TextWrapping="Wrap" TextAlignment="Center"/>
                                 </Button>
-                                <Button x:Name="СlearFilter" Click="СlearFilter_Click" Style="{DynamicResource style_Button_Action}">
+                                <Button x:Name="СlearFilter" Click="СlearFilter_Click" 
+                                        Style="{DynamicResource style_Button_Action}">
                                     <TextBlock Text="Сброс фильтра" TextWrapping="Wrap" TextAlignment="Center"/>
                                 </Button>
                             </WrapPanel>
 
-                            <WrapPanel Orientation="Horizontal" Margin="20,0,0,0">
+                            <WrapPanel Orientation="Horizontal" >
                                 <Label Content="Начало"  />
-                                <TextBox Name="TextBox_FStart" Width="150" Height="30" FontSize="15" TextWrapping="Wrap" />
+                                <local:PlaceHolderTextBox x:Name="TextBox_FStart" PlaceHolderText="ГГГГ:М:Д:Ч:М" 
+                                                      Style="{DynamicResource style_PlaceHolderTextBox}" />
                                 <Label Content="Окончание"  />
-                                <TextBox Name="TextBox_FEnd" Width="150" Height="30" FontSize="15" TextWrapping="Wrap" />
+                                <local:PlaceHolderTextBox x:Name="TextBox_FEnd" PlaceHolderText="ГГГГ:М:Д:Ч:М" 
+                                                      Style="{DynamicResource style_PlaceHolderTextBox}" />
                             </WrapPanel>
                             <WrapPanel Orientation="Horizontal" Margin="20,10,0,0">
-                                <Button x:Name="Discharge" Click="Discharge_Click" Style="{DynamicResource style_Button_Action}">
-                                    <TextBlock Text="Запись списка встреч в текстовый файл" TextWrapping="Wrap" TextAlignment="Center"/>
+                                <Button x:Name="Discharge" Click="Discharge_Click" 
+                                        Style="{DynamicResource style_Button_Action}">
+                                    <TextBlock Text="Запись списка встреч в текстовый файл" 
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
                                 </Button>
-                                <Button x:Name="SortStartDate" Click="SortStartDate_Click" Style="{DynamicResource style_Button_Action}">
-                                    <TextBlock Text="Сортировка по дате" TextWrapping="Wrap" TextAlignment="Center"/>
+                                <Button x:Name="SortStartDate" Click="SortStartDate_Click" 
+                                        Style="{DynamicResource style_Button_Action}">
+                                    <TextBlock Text="Сортировка по дате" TextWrapping="Wrap" 
+                                               TextAlignment="Center"/>
                                 </Button>
                             </WrapPanel>
                         </WrapPanel>                        
@@ -65,26 +74,32 @@
                     <DockPanel Grid.Row="2">                        
                         <Label DockPanel.Dock="Top" Content="Заполните событие, встречу" />
                         <WrapPanel DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="0,0,0,20">
-                            <Button x:Name="SaveMeet" Content="Записать встречу" Click="SaveMeet_Click" Style="{DynamicResource style_Button}"/>
-                            <Button x:Name="ChangeMeet" Content="Изменить встречу" Click="ChangeMeet_Click"  Style="{DynamicResource style_Button}"/>
-                            <Button x:Name="СlearForm" Content="Очистить форму" Click="СlearForm_Click"  Style="{DynamicResource style_Button}"/>
+                            <Button x:Name="SaveMeet" Content="Записать встречу" 
+                                    Click="SaveMeet_Click" Style="{DynamicResource style_Button}"/>
+                            <Button x:Name="ChangeMeet" Content="Изменить встречу" 
+                                    Click="ChangeMeet_Click"  Style="{DynamicResource style_Button}"/>
+                            <Button x:Name="СlearForm" Content="Очистить форму" 
+                                    Click="СlearForm_Click"  Style="{DynamicResource style_Button}"/>
                         </WrapPanel>
-                        <WrapPanel DockPanel.Dock="Bottom" >
-                            <Label Content="Уведомить о встрече " Margin="0,10,0,0" />
-                            <TextBox Name="TextBox_Notice" Width="150" Height="30" FontSize="15" 
-                                     TextWrapping="Wrap" Margin="0, 10,0,0" TextChanged="TextBox_Notice_TextChanged"/>                           
+                        <WrapPanel DockPanel.Dock="Bottom" Margin="10,10,10,0" >
+                            <Label Content="Уведомить о встрече " />
+                            <local:PlaceHolderTextBox x:Name="TextBox_Notice" PlaceHolderText="ГГГГ:М:Д:Ч:М" 
+                                                    Style="{DynamicResource style_PlaceHolderTextBox}" 
+                                                    TextChanged="TextBox_Notice_TextChanged"/>                           
                         </WrapPanel>                        
-                        <WrapPanel DockPanel.Dock="Bottom" >
-                            <Label Content="Окончание" Margin="0,10,0,0" />
-                            <TextBox Name="TextBox_Ending" Width="150" Height="30" FontSize="15" 
-                                     TextWrapping="Wrap" Margin="0,10,0,0" /> 
+                        <WrapPanel DockPanel.Dock="Bottom" Margin="10,10,10,0" >
+                            <Label Content="Окончание" />
+                            <local:PlaceHolderTextBox x:Name="TextBox_Ending" PlaceHolderText="ГГГГ:М:Д:Ч:М" 
+                                                      Style="{DynamicResource style_PlaceHolderTextBox}" /> 
                         </WrapPanel>
-                        <WrapPanel DockPanel.Dock="Bottom" >
-                            <Label Content="Начало" Margin="0,10,0,0" />
-                            <TextBox Name="TextBox_Start" Width="150" Height="30" FontSize="15" TextWrapping="Wrap" Margin="0,10,0,00" />
+                        <WrapPanel DockPanel.Dock="Bottom" Margin="10,10,10,0" >
+                            <Label Content="Начало" />
+                            <local:PlaceHolderTextBox x:Name="TextBox_Start" PlaceHolderText="ГГГГ:М:Д:Ч:М" 
+                                                      Style="{DynamicResource style_PlaceHolderTextBox}" />
                         </WrapPanel>
                         <Label DockPanel.Dock="Bottom" Content="Заполните сроки встречи" />
-                        <TextBox Name="TextBox_MeetContent" FontSize="15" TextWrapping="Wrap" TextChanged="TextBox_MeetContent_TextChanged"/>
+                        <TextBox Name="TextBox_MeetContent" FontSize="15" TextWrapping="Wrap" 
+                                 TextChanged="TextBox_MeetContent_TextChanged"/>
                     </DockPanel>
                 </Grid>
 
@@ -94,7 +109,8 @@
 
                 <!-- Правая панель -->
                 <StackPanel Grid.Column="2">
-                    <Label Content="Готовый список встреч" Height="30" FontSize="15" HorizontalAlignment="Center"/>
+                    <Label Content="Готовый список встреч" Height="30" FontSize="15" 
+                           HorizontalAlignment="Center"/>
                     <ListView Name="MeetingsList">
                         <ListView.View >
                             <GridView >
@@ -127,7 +143,8 @@
 
         <TabItem Header="Уведомления о начале встреч" FontSize="15" Background="LightBlue">
             <WrapPanel Orientation="Vertical">
-                <TextBlock Name="NoticeMeetings" Text="Уведомлений о начале встреч не найдено." TextWrapping="Wrap" Margin="20" />
+                <TextBlock Name="NoticeMeetings" Text="Уведомлений о начале встреч не найдено." 
+                           TextWrapping="Wrap" Margin="20" />
             </WrapPanel>
         </TabItem>        
     </TabControl>

@@ -23,7 +23,7 @@ namespace DBLibrary
                 using var file = File.CreateText(FilePath);
                 foreach (var meet in meetings)
                 {
-                    file.WriteLine(meet.ToString());
+                    file.WriteLine(meet.MeetToString());
                 }
                 Notify?.Invoke(LogType.info, "Список встреч записан в текстовый файл");
             }

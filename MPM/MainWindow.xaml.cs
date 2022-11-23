@@ -18,27 +18,24 @@ namespace MPM
     /// </summary>
     public partial class MainWindow : Window
     {
-        ObservableCollection<Meet> meetings;
-        List<Meet> meetingsList;
-        DBConnection db;
+        LogToFile log;    //объект логгирования в файл
+        DBConnection db;  //объект взаимодействия с БД
+        
+        List<Meet> meetingsList;  // список встреч из БД
+        ObservableCollection<Meet> meetings;   // обновляемая коллекция для вывода в ListView
+
         int idMeet;
         string changeContent;
         string changeNotice;
+
         DispatcherTimer timer;
         public Task taskNotice;
         private CancellationTokenSource cancelToken;
         public static event Action<LogType, string> Notify;
-        LogToFile log;
 
         public MainWindow()
         {
             InitializeComponent();
-
-            TextBox_Start.Text = "ГГГГ:М:Д:Ч:М";
-            TextBox_Ending.Text = "ГГГГ:М:Д:Ч:М";
-            TextBox_Notice.Text = "ГГГГ:М:Д:Ч:М";
-            TextBox_FStart.Text = "ГГГГ:М:Д:Ч:М";
-            TextBox_FEnd.Text = "ГГГГ:М:Д:Ч:М";
 
             db = new DBConnection();
             meetingsList = db.FindAllMeetings();
@@ -52,14 +49,16 @@ namespace MPM
             SaveToFile.Notify += ShowNotify;
             log = new();
             Notify += log.RecordToLog;
+                        
+            //timer = new DispatcherTimer();
+            //timer.Interval = TimeSpan.FromMinutes(1);
+            //timer.Tick += timerTick;
+            //timer.Start();
+            taskNotice = new(() => { Find(); });
+            taskNotice.Start();
 
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMinutes(1);
-            timer.Tick += timerTick;
-            timer.Start();     //программа зависает после нахождения уведомления.            
-
-    }
-
+        }
+        //фильтр списка встреч за период
         private void Filter_Click(object sender, RoutedEventArgs e)
         {
             DateTime start = ConversionToDateTime(TextBox_FStart.Text);
@@ -67,28 +66,26 @@ namespace MPM
             meetingsList = db.FindMeetingsByPeriod(start, end);
             if (meetingsList != null) MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);
         }
-
+        //очистка фильтра встреч
         private void СlearFilter_Click(object sender, RoutedEventArgs e)
-        {
-            TextBox_FStart.Text= "ГГГГ:М:Д:Ч:М";
-            TextBox_FEnd.Text = "ГГГГ:М:Д:Ч:М";
+        {            
             meetingsList = db.FindAllMeetings();
             MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);
             State.Text = "Фильтр очищен";
         }
-
+        //запись списка отобранного встреч в файл
         private void Discharge_Click(object sender, RoutedEventArgs e)
         {
             SaveToFile.RecordToFile(meetingsList);
             State.Text = "Встречи записаны в файл";
         }
-
+        //сортировка списка-не реализована
         private void SortStartDate_Click(object sender, RoutedEventArgs e)
         {
-            
+            // а нужна ли она??
             State.Text = "Сортировка не реализована";
         }
-
+        //запись новой встречи
         private void SaveMeet_Click(object sender, RoutedEventArgs e)
         {            
             var meet = CheсkMeet();
@@ -100,7 +97,7 @@ namespace MPM
                 MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);
             }
         }
-
+        //изменение встречи
         private void ChangeMeet_Click(object sender, RoutedEventArgs e)
         {
             var meet = CheсkMeet();
@@ -125,27 +122,27 @@ namespace MPM
             meetingsList = db.FindAllMeetings();
             MeetingsList.ItemsSource = new ObservableCollection<Meet>(meetingsList);
         }
-
+        //очиствка формы записи встречи
         private void СlearForm_Click(object sender, RoutedEventArgs e)
         {
             TextBox_MeetContent.Text = "";
-            TextBox_Start.Text = "ГГГГ:М:Д:Ч:М";
-            TextBox_Ending.Text = "ГГГГ:М:Д:Ч:М";
-            TextBox_Notice.Text = "ГГГГ:М:Д:Ч:М";
+            TextBox_Start.Text = TextBox_Start.PlaceHolderText;
+            TextBox_Ending.Text = TextBox_Ending.PlaceHolderText;
+            TextBox_Notice.Text = TextBox_Notice.PlaceHolderText;
             changeContent = string.Empty;
             State.Text = "Форма очищена";
         }
-
+        //изменение текста контента
         private void TextBox_MeetContent_TextChanged(object sender, TextChangedEventArgs e)
         {
             changeContent = TextBox_MeetContent.Text.ToString();
         }
-
+        //изменение уведомления
         private void TextBox_Notice_TextChanged(object sender, TextChangedEventArgs e)
         {
             changeNotice = TextBox_Notice.Text.ToString();
         }
-
+        //изменить встречу в списке
         private void MenuItem_Click_Change(object sender, RoutedEventArgs e)
         {
             var meet = MeetingsList.SelectedItem as Meet;
@@ -156,7 +153,7 @@ namespace MPM
             idMeet = meet.Id;
             State.Text = idMeet.ToString();
         }
-
+        //удалить встречу из списка
         private void MenuItem_Click_Delete(object sender, RoutedEventArgs e)
         {
             var meet = MeetingsList.SelectedItem as Meet;
@@ -166,7 +163,8 @@ namespace MPM
             MeetingsList.ItemsSource = meetings;
             State.Text = "Встреча удалена";
         }
-               
+
+        //проверка введенных данных о встрече       
         private Meet CheсkMeet()
         {
             // довести до ума
@@ -204,7 +202,7 @@ namespace MPM
             else return null;
            
         }
-
+        //преобразование даты
         private static DateTime ConversionToDateTime(string time)
         {
             DateTime dateTime = DateTime.MinValue;
@@ -225,20 +223,32 @@ namespace MPM
             }
             return dateTime;
         }
-               
+
+        //запуск проверки уведомлений
+        private void Find()
+        {
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(10);
+            timer.Tick += timerTick;
+            timer.Start();
+        }
+
         private void timerTick(object sender, EventArgs e)
         {
             timer.IsEnabled = true;
             if (timer.IsEnabled)
             {
-                taskNotice = new(() => { FindNotice(); });
-                taskNotice.Start();
+                //taskNotice = new(() => { FindNotice(); });
+                //taskNotice.Start();
+                FindNotice();
                 State.Text = "Старт1 проверки уведомлений";                
             }
             else State.Text = "Не запущена проверка уведомлений";
         }
+        //поиск актуальных уведомлений
         private void FindNotice()
         {
+            Notify?.Invoke(LogType.info, "FindNotice начато");
             string type = "no";
             var deadlineList = db.CheckDeadlineNotice();
             if (deadlineList != null && deadlineList.Count > 0) type = "yes";
@@ -248,23 +258,36 @@ namespace MPM
             {
                 using (cancelToken = new CancellationTokenSource())
                 {
-                    AlertNotice(type, Meet.NoticeToString(deadlineList), cancelToken.Token);
+                    //AlertNotice(type, Meet.NoticeToString(deadlineList), cancelToken.Token);
+                    if (cancelToken.Token.IsCancellationRequested)  // проверяем наличие сигнала отмены задачи
+                    {
+                        Notify?.Invoke(LogType.error, "Операция прервана");
+                        return;     //  выходим из метода и тем самым завершаем задачу
+                    }
+                    else AlertNotice(type, Meet.NoticeToString(deadlineList), cancelToken.Token);
                 }
             }
             catch (Exception exc) { Notify?.Invoke(LogType.error, $"{DateTime.Now} {exc.ToString()}"); }
             finally { cancelToken = null; } 
         }
+        //вывод уведомлений в строку состояния
         private void AlertNotice(string type, string deadline, CancellationToken token)
         {
-            if (type == "no") State.Text = "Нет уведомлений о начале встреч";
+            if (type == "no")
+            {
+                Notify?.Invoke(LogType.info, "Нет уведомлений о начале встреч");
+                State.Text = "Нет уведомлений о начале встреч";
+            }
             if (type == "yes") 
             { 
                 NoticeMeetings.Background = Brushes.DarkViolet;
                 NoticeMeetings.Text = deadline;
                 State.Text = "Есть уведомления о начале встреч";
+                Notify?.Invoke(LogType.info, "Есть уведомления о начале встреч");
             }
         }
 
+        //вывод сообщений о событиях в строку состояния
         private void ShowNotify(LogType type, string message)
         {
             State.Text = message;
@@ -281,6 +304,6 @@ connectionString  получать из файла json
 
 Доработать изменение уведомления
 
-Уведомление пользователя программу вводит в ступор после нахождения уведомления.
+Уведомление пользователя - пробую через CancellationToken
 
 */

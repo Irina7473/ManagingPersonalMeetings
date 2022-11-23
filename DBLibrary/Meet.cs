@@ -35,8 +35,8 @@ namespace DBLibrary
 
         public String MeetToString()
         {
-            String meetText = this.Id + ";" + this.Content + ";" + 
-                this.Start.ToString("g") + ";" + this.Ending.ToString("g") + ";";
+            String meetText = this.Id + " ; " + this.Content + " ; " + 
+                this.Start.ToString("g") + " ; " + this.Ending.ToString("g") + " ; ";
             if (this.Notice > DateTime.MinValue) meetText += this.Notice.ToString("g");
             else meetText += "не задано";
             return meetText;
