@@ -30,7 +30,6 @@ namespace MPM
 
         DispatcherTimer timer;
         public Task taskNotice;
-        private CancellationTokenSource cancelToken;
         public static event Action<LogType, string> Notify;
 
         public MainWindow()
@@ -45,18 +44,16 @@ namespace MPM
             changeContent = string.Empty;
             changeNotice = string.Empty;
 
-            DBConnection.Notify += ShowNotify;            
-            SaveToFile.Notify += ShowNotify;
             log = new();
+            DBConnection.Notify += log.RecordToLog;
+            SaveToFile.Notify += ShowNotify;
             Notify += log.RecordToLog;
-                        
-            //timer = new DispatcherTimer();
-            //timer.Interval = TimeSpan.FromMinutes(1);
-            //timer.Tick += timerTick;
-            //timer.Start();
-            taskNotice = new(() => { Find(); });
-            taskNotice.Start();
+            Notify?.Invoke(LogType.info, "START");
 
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(30);
+            timer.Tick += timerTick;
+            timer.Start();    //запуск проверки уведомлений        
         }
         //фильтр списка встреч за период
         private void Filter_Click(object sender, RoutedEventArgs e)
@@ -224,67 +221,41 @@ namespace MPM
             return dateTime;
         }
 
-        //запуск проверки уведомлений
-        private void Find()
-        {
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(10);
-            timer.Tick += timerTick;
-            timer.Start();
-        }
-
+        //запуск проверки уведомлений     
         private void timerTick(object sender, EventArgs e)
         {
             timer.IsEnabled = true;
             if (timer.IsEnabled)
             {
-                //taskNotice = new(() => { FindNotice(); });
-                //taskNotice.Start();
-                FindNotice();
-                State.Text = "Старт1 проверки уведомлений";                
+                taskNotice = new(() => { FindNotice(); });
+                taskNotice.Start();
+                //State.Text = "Старт проверки уведомлений";
+                //Notify?.Invoke(LogType.info, "Старт проверки уведомлений");
             }
-            else State.Text = "Не запущена проверка уведомлений";
+            else Notify?.Invoke(LogType.info, "Не запущена проверка уведомлений"); 
         }
-        //поиск актуальных уведомлений
+        //поиск актуальных уведомлений и вывод на страницу уведомлений
         private void FindNotice()
         {
+            Dispatcher.Invoke(new Action(() =>
+            {               
             Notify?.Invoke(LogType.info, "FindNotice начато");
             string type = "no";
             var deadlineList = db.CheckDeadlineNotice();
             if (deadlineList != null && deadlineList.Count > 0) type = "yes";
-
-            if (cancelToken != null) return;
-            try
-            {
-                using (cancelToken = new CancellationTokenSource())
-                {
-                    //AlertNotice(type, Meet.NoticeToString(deadlineList), cancelToken.Token);
-                    if (cancelToken.Token.IsCancellationRequested)  // проверяем наличие сигнала отмены задачи
-                    {
-                        Notify?.Invoke(LogType.error, "Операция прервана");
-                        return;     //  выходим из метода и тем самым завершаем задачу
-                    }
-                    else AlertNotice(type, Meet.NoticeToString(deadlineList), cancelToken.Token);
-                }
-            }
-            catch (Exception exc) { Notify?.Invoke(LogType.error, $"{DateTime.Now} {exc.ToString()}"); }
-            finally { cancelToken = null; } 
-        }
-        //вывод уведомлений в строку состояния
-        private void AlertNotice(string type, string deadline, CancellationToken token)
-        {
             if (type == "no")
             {
                 Notify?.Invoke(LogType.info, "Нет уведомлений о начале встреч");
                 State.Text = "Нет уведомлений о начале встреч";
             }
-            if (type == "yes") 
-            { 
-                NoticeMeetings.Background = Brushes.DarkViolet;
-                NoticeMeetings.Text = deadline;
-                State.Text = "Есть уведомления о начале встреч";
+            if (type == "yes")
+            {
+                NoticeMeetings.Background = Brushes.Lavender;
+                NoticeMeetings.Text = Meet.NoticeToString(deadlineList);
+                MessageBox.Show("Есть уведомления о начале встреч");
                 Notify?.Invoke(LogType.info, "Есть уведомления о начале встреч");
             }
+        }), null);
         }
 
         //вывод сообщений о событиях в строку состояния
@@ -298,12 +269,6 @@ namespace MPM
 
 /*  TO DO
 connectionString  получать из файла json
-
 Сделать валидацию для дат
 Сделать так, чтобы время минимальное не записывалось-не отображалось
-
-Доработать изменение уведомления
-
-Уведомление пользователя - пробую через CancellationToken
-
 */

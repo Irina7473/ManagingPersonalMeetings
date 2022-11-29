@@ -143,8 +143,7 @@
 
         <TabItem Header="Уведомления о начале встреч" FontSize="15" Background="LightBlue">
             <WrapPanel Orientation="Vertical">
-                <TextBlock Name="NoticeMeetings" Text="Уведомлений о начале встреч не найдено." 
-                           TextWrapping="Wrap" Margin="20" />
+                <TextBlock Name="NoticeMeetings" TextWrapping="Wrap" Margin="20" />
             </WrapPanel>
         </TabItem>        
     </TabControl>

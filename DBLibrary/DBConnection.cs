@@ -362,7 +362,8 @@ namespace DBLibrary
             _query.Parameters.Clear();
             var deadlineParam = new MySqlParameter("@deadline", deadline);
             _query.Parameters.Add(deadlineParam);
-            string comText = $"SELECT * FROM meetingschedule WHERE notice=@deadline;";
+            string comText = $"SELECT * FROM meetingschedule WHERE notice>@deadline AND notice<(@deadline + INTERVAL 5 MINUTE);";
+            //Notify?.Invoke(LogType.info, $"Ищу уведомления");
             return FindMeetings(comText);
         }
     }

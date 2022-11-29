@@ -21,7 +21,7 @@ namespace Logger
         // запись логов в файл
         public async void RecordToLog(LogType type, string message)
         {            
-            var text = type + " " + message;
+            var text = DateTime.Now + " " + type + " " + message;
             try
             {
                 using (StreamWriter writer = new(TotalPath, true))
